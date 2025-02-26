@@ -1,5 +1,5 @@
-    
- const materia = {
+
+const materia = {
     props: ['forms'],
     data() {
         return {

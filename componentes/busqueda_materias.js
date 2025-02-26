@@ -1,4 +1,4 @@
-const buscarmateria = {
+    const buscarmateria = {
     data() {
         return {
             buscar: '',
