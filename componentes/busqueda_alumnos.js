@@ -1,5 +1,4 @@
-    
- const buscaralumno = {
+const buscaralumno = {
     data() {
         return {
             buscar: '',
