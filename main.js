@@ -1,22 +1,29 @@
 const {createApp, ref} = Vue;
 const Dexie = window.Dexie,
-    db = new Dexie('db_usss037423_usss026723');
+    db = new Dexie('db_academico');
 
 const app = createApp({
     components: {
-        autor,
-        libro,
-        buscarautor,
-        buscarlibro
+        alumno,
+        materia,
+        buscaralumno,
+        buscarmateria,
+        matricula,
+        buscarmatricula,
+        inscripcionmaterias,
+        buscarmateriasinscritas,
     },
     data() {
         return {
             forms : {
-                autor: {mostrar: false},
-                buscarAutor: {mostrar: false},
-                libro: {mostrar: false},
-                buscarLibro: {mostrar: false},
+                alumno: {mostrar: false},
+                buscarAlumno: {mostrar: false},
+                materia: {mostrar: false},
+                buscarMateria: {mostrar: false},
                 matricula: {mostrar: false},
+                buscarMatricula: {mostrar: false},
+                inscripcionMaterias: {mostrar: false},
+                buscarInscripcionMaterias: {mostrar: false}
             },
         };
     },
@@ -33,8 +40,10 @@ const app = createApp({
     },
     created() {
         db.version(1).stores({
-            autores: '++idAutor, codigo, nombre, pais, telefono',
-            libros: '++idLibro, idAutor, isbn, titulo, editorial, edicion',
+            alumnos: '++idAlumno, codigo, nombre, direccion, telefono, email, nacimiento, sexo, departamento, municipio, distrito',
+            materias: '++idMateria, codigo, nombre, uv',
+            matriculas: '++idMatricula, idAlumno, fecha, periodo, carrera, nombreAlumno, codigoAlumno',
+            inscripcion_materia: '++idInscripcion, idAlumno, idMateria'
         });
     }
 });
