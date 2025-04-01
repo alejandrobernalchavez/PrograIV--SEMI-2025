@@ -1,10 +1,9 @@
-
-const buscaralumno = {
+    
+ const buscaralumno = {
     data() {
         return {
             buscar: '',
             buscarTipo: 'nombre',
-            filtro:'todos',
             alumnos: [],
         }
     },
@@ -13,47 +12,29 @@ const buscaralumno = {
             this.$emit('modificar', alumno);
         },
         eliminarAlumno(alumno) {
-            alertify.confirm('Eliminar Alumno', `¿Esta seguro de eliminar el alumno ${alumno.nombre}?`, () => {
-                db.alumnos.delete(alumno.idAlumno);
-                this.listarAlumnos();
-                alertify.success(`Alumno ${alumno.nombre} eliminado`);
+            alertify.confirm('Eliminar Alumno', `¿Esta seguro de eliminar el alumno ${alumno.nombre}?`, async() => {
+                let respuesta = await fetch(`private/modulos/alumnos/alumno.php?accion=eliminar&alumnos=${JSON.stringify(alumno)}`),
+                    data = await respuesta.json();
+                if( data != true ){
+                    alertify.error(data);
+                }else{
+                    db.alumnos.delete(alumno.codigo_transaccion);
+                    this.listarAlumnos();
+                    alertify.success(`Alumno ${alumno.nombre} eliminado`);
+                }
             }, () => { });
         },
         async listarAlumnos() {
             this.alumnos = await db.alumnos.filter(alumno => alumno[this.buscarTipo].toLowerCase().includes(this.buscar.toLowerCase())).toArray();
-            this.alumnos.filter(alumno=> this.filtrarAlumno(alumno));
+            if (this.alumnos.length<1) {
+                fetch('private/modulos/alumnos/alumno.php?accion=consultar')
+                    .then(response => response.json())
+                    .then(data =>{
+                        this.alumnos = data;
+                        db.alumnos.bulkAdd(data);
+                    });
+            }
         },
-        filtrarAlumno(alumno){
-            const hoy = new Date();
-            const mesActual= hoy.getMonth;
-            const diaActual = hoy.getDate;
-
-            const nacimientoAlumno = new Date(alumno.nacimiento);
-            const mesNacimiento = nacimientoAlumno.getMonth;
-            const diaNacimiento = nacimientoAlumno.getDate;
-
-
-            if(filtro=='todos'){
-                return true;
-            }
-            else if (filtro=='cumpleañeros'){
-                return mesNacimiento==mesActual;
-            }
-            else if (filtro=='menores18'){
-                const edadMinima = 18
-                if(mesActual > mesNacimiento || (mesActual == mesNacimiento && diaActual > diaNacimiento)){
-                    return edad - 1 < edadMinima;
-                }
-                return edad < edadMinima;
-            }
-            else if (filtro=='menores21'){
-                const edadMinima = 21
-                if(mesActual > mesNacimiento || (mesActual == mesNacimiento && diaActual > diaNacimiento)){
-                    return edad - 1 < edadMinima;
-                }
-                return edad < edadMinima;
-            }
-        }
     },
     created() {
         this.listarAlumnos();
@@ -66,18 +47,12 @@ const buscaralumno = {
                         <tr>
                             <th>BUSCAR POR</th>
                             <th>
-                                <select v-model="buscarTipo" class="form-select">
+                                <select v-model="buscarTipo" class="form-control">
                                     <option value="codigo">CODIGO</option>
                                     <option value="nombre">NOMBRE</option>
                                     <option value="direccion">DIRECCION</option>
                                     <option value="telefono">TELEFONO</option>
                                     <option value="email">EMAIL</option>
-                                </select>
-                                <select v-model ="filtro" class="form-select" @change="listarAlumnos()">
-                                    <option value ="todos">Todos</option>
-                                    <option value ="cumpleañeros">Cumpleañeros</option>
-                                    <option value ="menores18">Menores de 18</option>
-                                    <option value ="menores21">Menores de 21</option>
                                 </select>
                             </th>
                             <th colspan="4">
@@ -94,7 +69,7 @@ const buscaralumno = {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="alumno in alumnos" @click="modificarAlumno(alumno)" :key="alumno.idAlumno">
+                        <tr v-for="alumno in alumnos" @click="modificarAlumno(alumno)" :key="alumno.codigo_transaccion">
                             <td>{{ alumno.codigo }}</td>
                             <td>{{ alumno.nombre }}</td>
                             <td>{{ alumno.direccion }}</td>
